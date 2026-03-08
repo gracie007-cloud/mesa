@@ -10,23 +10,23 @@ class ObservableSignals(SignalType):
     Inherits from str for backward compatibility with existing string-based code.
 
     Attributes:
-        CHANGE: Emitted when an observable's value changes.
+        CHANGED: Emitted when an observable's value changes.
 
     Examples:
-        >>> from mesa.experimental.mesa_signals import Observable, HasObservables, SignalType
-        >>> class MyModel(HasObservables):
+        >>> from mesa.experimental.mesa_signals import Observable, HasEmitters, SignalType
+        >>> class MyModel(HasEmitters):
         ...     value = Observable()
         ...     def __init__(self):
         ...         super().__init__()
         ...         self._value = 0
         >>> model = MyModel()
-        >>> model.observe("value", ObservableSignals.CHANGE, lambda s: print(s.new))
+        >>> model.observe("value", ObservableSignals.CHANGED, lambda s: print(s.new))
         >>> model.value = 10
         10
 
     Note:
         String-based signal types are still supported for backward compatibility:
-        >>> model.observe("value", "change", handler)  # Still works
+        >>> model.observe("value", "changed", handler)  # Still works
     """
 
     CHANGED = "changed"
@@ -41,38 +41,31 @@ class ListSignals(SignalType):
 
     Provides list-specific signal types with IDE autocomplete and type safety.
     Inherits from str for backward compatibility with existing string-based code.
-    Includes all list-specific signals (INSERT, APPEND, REMOVE, REPLACE) plus
-    the base CHANGE signal inherited from the observable protocol.
-
-    Note on Design:
-        This enum does NOT extend SignalType because Python Enums cannot be extended
-        once they have members defined. Instead, we include CHANGE as a member here
-        to maintain compatibility. The string inheritance provides value equality:
-        ListSignalType.CHANGE == SignalType.CHANGE == "change" (all True).
+    Includes all list-specific signals (INSERTED, APPENDED, REMOVED, REPLACED) plus
+    a SET signal for when the entire list is modified.
 
     Attributes:
-        CHANGE: Emitted when the list itself is replaced/assigned.
-        INSERT: Emitted when an item is inserted into the list.
-        APPEND: Emitted when an item is appended to the list.
-        REMOVE: Emitted when an item is removed from the list.
-        REPLACE: Emitted when an item is replaced/modified in the list.
+        SET: Emitted when the list itself is replaced/assigned.
+        INSERTED: Emitted when an item is inserted into the list.
+        APPENDED: Emitted when an item is appended to the list.
+        REMOVED: Emitted when an item is removed from the list.
+        REPLACED: Emitted when an item is replaced/modified in the list.
 
     Examples:
-        >>> from mesa.experimental.mesa_signals import ObservableList, HasObservables, ListSignals
-        >>> class MyModel(HasObservables):
+        >>> from mesa.experimental.mesa_signals import ObservableList, HasEmitters, ListSignals
+        >>> class MyModel(HasEmitters):
         ...     items = ObservableList()
         ...     def __init__(self):
         ...         super().__init__()
         ...         self.items = []
         >>> model = MyModel()
-        >>> model.observe("items", ListSignals.INSERT, lambda s: print(f"Inserted {s.new}"))
+        >>> model.observe("items", ListSignals.INSERTED, lambda m: print(f"Inserted {m.kwargs['new']}"))
         >>> model.items.insert(0, "first")
         Inserted first
 
     Note:
         String-based signal types are still supported for backward compatibility:
-        >>> model.observe("items", "insert", handler)  # Still works
-        Also compatible with SignalType.CHANGE since both equal "change" as strings.
+        >>> model.observe("items", "inserted", handler)  # Still works
     """
 
     SET = "set"
@@ -87,3 +80,4 @@ class ModelSignals(SignalType):
 
     AGENT_ADDED = "agent_added"
     AGENT_REMOVED = "agent_removed"
+    RUN_ENDED = "run_ended"
